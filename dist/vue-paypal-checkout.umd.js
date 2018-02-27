@@ -16326,7 +16326,16 @@ var props = [
 new paypalProp({ name: 'buttonStyle', paypalName: 'style', injection: propTypes.BUTTON }), new paypalProp({ name: 'braintree', injection: propTypes.BUTTON }), new paypalProp({ name: 'locale', type: String, injection: propTypes.BUTTON }),
 
 // Payment Props
-new paypalProp({ name: 'experience', injection: propTypes.PAYMENT }),
+new paypalProp({ name: 'experience', injection: propTypes.PAYMENT }), new paypalProp({
+  name: 'paymentUrl',
+  paypalName: 'payment_url',
+  type: String,
+  validator: function validator(value) {
+    return (/^http?s?:\/\//.test(value)
+    );
+  },
+  injection: propTypes.PAYMENT
+}),
 
 // Transaction Props
 new paypalProp({
@@ -16373,7 +16382,7 @@ var PayPalCheckout = { render: function render() {
   }, staticRenderFns: [],
   props: _Object$assign(defaultProps(), additionalProps.vmProps()),
   methods: {
-    payment: function payment() {
+    payment: function payment(resolve, reject) {
       var vue = this;
 
       var transaction = _Object$assign({
@@ -16387,14 +16396,32 @@ var PayPalCheckout = { render: function render() {
         transactions: [transaction]
       }, assignTo(vue, propTypes.PAYMENT));
 
-      return paypalCheckout.rest.payment.create(this.env, this.client, payment);
+      // Using server to confirm
+      if (vue.paymentUrl) {
+        var CREATE_PAYMENT_URL = vue.paymentUrl;
+        paypalCheckout.request.post(CREATE_PAYMENT_URL).then(function (res) {
+          resolve(res.id);
+        }).catch(function (err) {
+          reject(err);
+        });
+      }
+
+      // Rest type
+      else {
+          console.log("Using rest");
+          return paypalCheckout.rest.payment.create(this.env, this.client, payment);
+        }
     },
     onAuthorize: function onAuthorize(data, actions) {
       var vue = this;
       vue.$emit('paypal-paymentAuthorized', data);
-      return actions.payment.execute().then(function (response) {
-        vue.$emit('paypal-paymentCompleted', response);
-      });
+
+      if (!vue.paymentUrl) {
+        // Not using server to confirm
+        return actions.payment.execute().then(function (response) {
+          vue.$emit('paypal-paymentCompleted', response);
+        });
+      }
     },
     onCancel: function onCancel(data) {
       var vue = this;

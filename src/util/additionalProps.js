@@ -18,6 +18,14 @@ const props = [
 
   // Payment Props
   new PayPalProp({ name: 'experience', injection: propTypes.PAYMENT }),
+  
+  new PayPalProp({
+    name: 'paymentUrl',
+    paypalName: 'payment_url',
+    type: String,
+    validator: value => (/^http?s?:\/\//.test(value)),
+    injection: propTypes.PAYMENT,
+  }),
 
   // Transaction Props
   new PayPalProp({

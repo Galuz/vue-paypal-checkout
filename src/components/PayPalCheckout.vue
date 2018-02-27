@@ -16,7 +16,7 @@ export default {
     additionalProps.vmProps(),
   ),
   methods: {
-    payment() {
+    payment(resolve, reject) {
       const vue = this;
 
       const transaction = Object.assign({
@@ -30,14 +30,32 @@ export default {
         transactions: [transaction],
       }, assignTo(vue, propTypes.PAYMENT));
 
-      return paypal.rest.payment.create(this.env, this.client, payment);
+      // Using server to confirm
+      if(vue.paymentUrl){
+        const CREATE_PAYMENT_URL = vue.paymentUrl;
+        paypal.request.post(CREATE_PAYMENT_URL)
+        .then(res => {
+          resolve(res.id)
+        }).catch(err => {
+          reject(err)
+        })
+      }
+
+      // Rest type
+      else {
+        console.log("Using rest")
+        return paypal.rest.payment.create(this.env, this.client, payment);
+      }
     },
     onAuthorize(data, actions) {
       const vue = this;
       vue.$emit('paypal-paymentAuthorized', data);
-      return actions.payment.execute().then((response) => {
-        vue.$emit('paypal-paymentCompleted', response);
-      });
+      
+      if(!vue.paymentUrl){ // Not using server to confirm
+        return actions.payment.execute().then((response) => {
+          vue.$emit('paypal-paymentCompleted', response);
+        });
+      }
     },
     onCancel(data) {
       const vue = this;

@@ -3927,9 +3927,9 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-paypal-checkout@^4.0.173:
-  version "4.0.173"
-  resolved "https://registry.yarnpkg.com/paypal-checkout/-/paypal-checkout-4.0.173.tgz#1e0118ce6d7c43bc6b9357d92e28ef7ced2ccd4c"
+paypal-checkout@^4.0.178:
+  version "4.0.178"
+  resolved "https://registry.yarnpkg.com/paypal-checkout/-/paypal-checkout-4.0.178.tgz#57355b9100cba5151ab28de8aebc02d0927ba779"
   dependencies:
     Base64 "^1.0.0"
     beaver-logger "^3.0.6"
